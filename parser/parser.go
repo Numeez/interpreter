@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/Numeez/interpreter/ast"
 	"github.com/Numeez/interpreter/lexer"
 	"github.com/Numeez/interpreter/token"
@@ -10,10 +12,11 @@ type Parser struct {
 	l         *lexer.Lexer
 	curToken  token.Token
 	peekToken token.Token
+	errors    []string
 }
 
 func New(l *lexer.Lexer) *Parser {
-	p := &Parser{l: l}
+	p := &Parser{l: l, errors: []string{}}
 	p.nextToken()
 	p.nextToken()
 	return p
@@ -67,6 +70,7 @@ func (p *Parser) expectPeekToken(t token.TokenType) bool {
 		p.nextToken()
 		return true
 	} else {
+		p.peekError(t)
 		return false
 	}
 
@@ -77,4 +81,10 @@ func (p *Parser) peekTokenIs(tok token.TokenType) bool {
 }
 func (p *Parser) curTokenIs(tok token.TokenType) bool {
 	return p.curToken.Type == tok
+}
+func (p *Parser) Errors() []string { return p.errors }
+
+func (p *Parser) peekError(token token.TokenType) {
+	msg := fmt.Sprintf("expected next token to be %s, got %s instead", token, p.peekToken.Type)
+	p.errors = append(p.errors, msg)
 }
